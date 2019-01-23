@@ -7,7 +7,7 @@ const rp = require('request-promise');
 const table = require('cli-table');
 
 // Require Articles and Comments Models
-const Articles = require("./models/Articles.js");
+const Articles = require("./models/Books.js");
 const Comments = require("./models/Comments.js");
 
 // Tools for Scrapping
@@ -52,7 +52,7 @@ if(process.env.NODE_ENV == 'production'){
   });
   
   // Import Routes/Controller
-  const router = require('./controllers/controller.js');
+  const router = require('./controllers/controllers.js');
   app.use('/', router);
   
   
