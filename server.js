@@ -1,3 +1,4 @@
+require('dotenv').config()
 //App Dependencies
 const express = require('express');
 const exphbs = require('express-handlebars');
@@ -5,39 +6,53 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const rp = require('request-promise');
 const table = require('cli-table');
+const path = require('path');
 
-// Require Articles and Comments Models
-const Articles = require("./models/Books.js");
-const Comments = require("./models/Comments.js");
 
 // Tools for Scrapping
 var cheerio = require('cheerio');
 var request = require('request');
 
 // Start Express
-const app = express();
+var app = express();
+var PORT = process.env.PORT || 3000;
 
-// Initiate body-parser for app
-app.use(bodyParser.urlencoded({
-    extended: false
-}));
+
+// Initiate body-parser for app for data parsing
+//app.use(logger("dev"));
+
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json());
+
+//app.use(bodyParser.urlencoded({
+    //extended: false
+//}));
+// Make public a static dir
+app.use(express.static(path.join(__dirname, "public")));
+
+
 
 // Express handlebars
-app.engine('handlebars', exphbs({defaultLayout:'main'}));
+app.set('views', path.join(__dirname, '/views'));
+app.engine('handlebars', exphbs({defaultLayout:'main', extname:'.handlebars', layoutsDir: 'views/layouts'}));
 app.set('view engine', 'handlebars');
 
-// Make public a static dir
-app.use(express.static("public"));
+// Routes
+var news = require('/routes/newsRoutes.js');
+app.use(news);
 
 // If else statements
 
-if(process.env.NODE_ENV == 'production'){
+//if(process.env.NODE_ENV == 'production'){
 
-    mongoose.connect('mongodb://');
-  }
-  else{
-    mongoose.connect('mongodb://localhost/Scrapper');
-  }
+    //mongoose.connect('mongodb://');
+  //}
+  //else{
+    //mongoose.connect('mongodb://localhost/Scrapper');
+  //}
+mongoose.connect("mongodb://localhost/scrapper", { useNewUrlParser: true });
+mongoose.Promise = global.Promise
+
   
   const db = mongoose.connection;
   
@@ -52,12 +67,12 @@ if(process.env.NODE_ENV == 'production'){
   });
   
   // Import Routes/Controller
-  const router = require('./controllers/controllers.js');
-  app.use('/', router);
+  //const router = require('./controllers/controllers.js');
+  //app.use('/', router);
   
   
   // Launch App
-  const port = process.env.PORT || 3000;
-  app.listen(port, function(){
-    console.log('Running on port: ' + port);
+
+  app.listen(PORT, function() {
+    console.log("Running on port: " + PORT);
   });
