@@ -1,59 +1,52 @@
 //==================
 //App Dependencies
 //==================
-const express = require('express');
-const exphbs = require('express-handlebars');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-//const rp = require('request-promise');
-//const table = require('cli-table');
-//const path = require('path');
+var express = require("express");
+var exphbs = require("express-handlebars");
+var bodyParser = require("body-parser");
+var mongoose = require("mongoose");
 
 //=====================
 // Tools for Scrapping
 //=====================
-var cheerio = require('cheerio');
-var request = require('request');
-var db = require('./models');
+var cheerio = require("cheerio");
+var request = require("request");
+var db = require("./models");
 // Start Express
 var app = express();
-var PORT = 3000;
+var PORT = process.env.PORT || 3000;
 
 //=================================
 // Initiate body-parser for app for data parsing - middleware
 //=================================
-//app.use(logger("dev"));
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
-app.use(express.static('public'));
-
+app.use(express.static("public"));
 // Make public a static dir
 //app.use(express.static(path.join(__dirname, "public")));
 
-//===============
+
+//===================
 //Connect to mongodb
-//===============
-var mongodb_uri = process.env.mongodb_uri || "mongodb: //localhost/Scrapping";
-mongoose.Promise = Promise;
-mongoose.connect(mongodb_uri, { useNewUrlParser: true });
+//===================
+//var MONGODB_URI = process.env.MONGODB_URI || "mongodb: //localhost/Headlines";
+//mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
-//mongoose.connect("mongodb://localhost/scrapper", { useNewUrlParser: true });
-//mongoose.Promise = global.Promise
-//app.use(bodyParser.urlencoded({
-    //extended: false
-//}));
-
+mongoose.connect('mongodb://localhost/Headlines', { useNewUrlParser: true });
 //====================
 // Express handlebars
 //====================
 
-app.engine('handlebars', exphbs({defaultLayout:'main' }));
-app.set('view engine', 'handlebars');
-//=========
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
+
+//==============
 // Routes
-//=========
+//==============
+// Main Root
 app.get("/", function(req, res) {
+
   db.Article.find({saved: false})
   .then(function(dbArticles) {
 
@@ -61,6 +54,7 @@ app.get("/", function(req, res) {
     var articles = {
       articles: dbArticles
     }
+
     res.render("index", articles);
   })
   .catch(function(err) {
@@ -70,25 +64,26 @@ app.get("/", function(req, res) {
 
 // Route for Scrapping 
 app.get("/scrape", function(req, res) {
+
   db.Article.find({})
-  .then(function(dbContent) {
+  .then(function (dbContent) {
     if(dbContent.length > 0 ) {
       console.log("Scrapping up to date!");
 
     } else {
-      request("https://www.sfchronicle.com/", function (err, res, body) {
+      request("https://www.sfchronicle.com/local/bayarea/", function (err, res, body) {
         if (err) {
           console.log("Error found: ", err);
 
         } else {
           var $ = cheerio.load(body);
 
-          $("#.headline").each(function (i, element) {
+          $(".prem-hl-item").each(function (i, element) {
             // Empty string where scrapped articles will go 
             var articleInfo = {};
 
             articleInfo.title = $(this)
-            .children(".data-tb-shadow-region-title")
+            .children(".headline")
             .children("a")
             .text()
 
@@ -96,14 +91,14 @@ app.get("/scrape", function(req, res) {
             .children(".blurb")
             .text()
 
-            articleInfo.url = "https://www.sfchronicle.com/" + $(this)
-            .children(".data-tb-shadow-region-link")
+            articleInfo.url = "https://www.sfchronicle.com/local/bayarea/" + $(this)
+            .children(".headline")
             .children("a")
             .attr("href");
 
             db.Article.create(articleInfo)
             .then(function (dbArticle) {
-              console.log(dbArticle);
+              
             })
             .catch(function (err) {
               console.log(err);
@@ -119,44 +114,71 @@ app.get("/scrape", function(req, res) {
     console.log(err);
   })
 })
-// Route for all saved articles
 
-app.get("/savedArticles", function(req, res) {
-  db.Article.find({saved: true})
-  .then(function(dbArticles) {
+// Route to delete all articles && notes from database
 
-    var articles = { articles: dbArticles
-    }
-    res.render("saved", articles);
-  })
-  .catch(function(err) {
-    console.log(err);
-  })
-})
-
-// Route to delete all articles from database
-
-app.get("/deleteArticles", function(req, res) {
+app.get("/deleteArticles", function (req, res) {
   db.Article.deleteMany({})
-  .then(function(result) {
+  .then(function (result) {
     console.log("Articles have been deleted!");
     res.json(result);
   })
-  .catch(function(err) {
+  .catch(function (err) {
     console.log(err);
   })
+
+  db.Note.deleteMany({})
+  .then(function (result) {
+     console.log("Notes have been deleted!");
+     res.json(result);
+  })
+  .catch(function (err) {
+     console.log(err);
+  })
+
 
 })
 
 // Route for updating saved articles
-app.put("/savedArticle/:id", function(req, res) {
-  db.Article.findOneAndUpdate({id: req.params.id}, {$set: {saved: true}})
-  .then(function(dbArticle) {
+app.put("/saveArticle/:id", function(req, res) {
+
+  db.Article.findOneAndUpdate({ _id: req.params.id }, {$set: { saved: true } })
+  .then(function (dbArticle) {
     res.json(dbArticle);
   })
-  .catch(function(err) {
+  .catch(function (err) {
     console.log(err);
   })
+
+})
+
+// Route for all saved articles
+
+app.get("/savedArticles", function (req, res) {
+  db.Article.find({saved: true})
+  .then(function(dbArticles) {
+
+    var articles = { 
+      articles: dbArticles
+    }
+    res.render("saved", articles);
+  })
+  .catch(function (err) {
+    console.log(err);
+  })
+
+})
+// Route for unsaved articles
+app.put("/unsaveArticle/:id", function (req, res) {
+
+  db.Article.findOneAndUpdate({ _id: req.params.id }, { $set: { saved: false } })
+     .then(function (dbArticle) {
+        res.json(dbArticle);
+     })
+     .catch(function (err) {
+        console.log(err);
+     })
+
 })
 
 // Route to create a new note
@@ -179,7 +201,7 @@ db.Note.create(req.body)
 })
 
 // Route to update the note of a certain article
-app.get("article/:id/notes", function (req, res) {
+app.get("/article/:id/notes", function (req, res) {
   console.log(req.params.id);
 
   db.Article.findOne({ _id: req.params.id })
@@ -191,6 +213,7 @@ app.get("article/:id/notes", function (req, res) {
     res.json(err);
   })
 })
+
 
 //==============
   // Server

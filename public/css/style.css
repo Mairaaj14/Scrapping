@@ -1,0 +1,106 @@
+body {
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+ }
+ 
+
+ 
+ #articles-display {
+    min-height: 100vh;
+    background-color: rgb(245, 245, 245);
+    padding: 25px 50px;
+ }
+ 
+ .article-card {
+    padding: 25px;
+    margin: 25px 0;
+ }
+ 
+ .article-card h2 {
+    margin: 0 0 15px;
+ }
+ 
+ .article-card a {
+    color: lightslategray;
+ }
+ 
+ .article-card a:hover {
+    color:lightslategray;
+    text-decoration: none;
+ }
+ 
+ .article-card p {
+    margin: 0 0 15px 0;
+ }
+ 
+ .article-button {
+    background: none;
+    color: blue;
+    padding: 5px 15px;
+    border: 2px solid blue;
+    transition: all 200ms;
+ }
+ 
+ .article-button:hover {
+    color: white;
+    background-color:blue;
+ }
+ 
+ .article-button:focus {
+    outline: 0;
+ }
+ 
+ .unsave-article {
+    margin-right: 5px;
+ }
+ 
+ #modalLabel {
+    color: rgb(37,104,222);
+ }
+ 
+ .form-item {
+    display: block;
+    margin: 0;
+ }
+ 
+ #note-body {
+    height: 30px;
+    margin: 15px 0;
+ }
+  
+ #navbar {
+    height: 80px;
+    background-color: gray;
+    border-bottom: 1px solid lightgray;
+ }
+ 
+ #navbar a {
+    color: black;
+ }
+ 
+ #navbar a:hover {
+    text-decoration: none;
+ }
+ 
+ 
+ #nav-buttons {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+ }
+ 
+ .nav-button {
+    padding: 15px;
+    cursor: pointer;
+    transition: all 300ms;
+ }
+ 
+ .nav-button:hover {
+    color: blue;
+ }
+ 
+ .spacer {
+    margin: 0 10px;
+ }
+ 

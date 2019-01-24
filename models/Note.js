@@ -10,6 +10,6 @@ var NoteSchema = new Schema({
     }
 });
 
-var Note = mongoose.model("newNote", NoteSchema);
+var Note = mongoose.model("Note", NoteSchema);
 
 module.exports = Note;

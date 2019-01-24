@@ -1,0 +1,55 @@
+<div class="container-fluid">
+   <div class="row" id="navbar">
+      <div class="col-6">
+          <div>Bay Area Article Scraper</div>
+         </div>
+      </div>
+      <div class="col-6" id="nav-buttons">
+         <a href="/savedArticles">
+            <div class="nav-button" id="saved-articles"> Saved Articles</div>
+         </a>
+         <div class="spacer"> | </div>
+         <div class="nav-button" id="scrape-articles">Scrape Articles</div>
+         <div class="spacer"> | </div>
+         <div class="nav-button" id="clear-articles">Clear Articles</div>
+      </div>
+   </div>
+</div>
+
+
+<div class="container-fluid" id="articles-display">
+
+{{#each articles}}
+	<div class="card article-card">
+		<a href="{{url}}">
+            <h2>{{title}}</h2>
+        </a>
+        <p><strong>Article Summary: </strong>{{summary}}</p>
+	<div>
+    <button class="article-btn save-article" data-id="{{id}}">Save News Article</button>
+    </div>
+</div>
+{{/each}}
+</div>
+<script>
+    $("#clear-articles").on("click", function() {
+      $.get("/deleteArticles").then(function(res) {
+        $("#articles-display").empty();
+      })
+   })
+   $("#scrape-articles").on("click", function() {
+      $.get("/scrape").then(function(res) {
+        location.reload();
+      })
+   })
+   $(".save-article").on("click", function() {
+      var id = $(this).attr("data-id");
+      $.ajax({
+         method: "PUT",
+         url: "saveArticle/" + id
+      }).then(function(res) {
+         location.reload();
+      })
+   })
+
+</script>

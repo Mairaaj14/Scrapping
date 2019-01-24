@@ -1,0 +1,103 @@
+<div class="container-fluid">
+   <div class="row" id="navbar">
+      <div class="col-6">
+            <div> Bay Area Article Scraper</div>
+         </div>
+      </div>
+      <div class="col-6" id="nav-buttons">
+         <a href="/">
+            <div class="nav-button" id="home"> Home</div>
+         </a>
+         <div class="spacer"> | </div>
+         <div class="nav-button" id="clear-articles">Clear Articles</div>
+      </div>
+   </div>
+</div>
+
+<div class="container-fluid" id="articles-display">
+   {{#each articles}}
+   <div class="card article-card">
+      <a href="{{url}}">
+         <h2>{{title}}</h2>
+      </a>
+      <p><strong>Article Summary: </strong>{{summary}}</p>
+      <div>
+         <button class="article-button unsave-article" data-id="{{id}}">Unsave Article</button>
+         <button type="button" class="article-button create-note" data-id="{{id}}" data-toggle="modal" data-target="#noteForm">Your
+            Notes</button>
+      </div>
+   </div>
+   {{/each}}
+</div>
+
+<div class="modal fade" id="noteForm" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+   <div class="modal-dialog" role="document">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h4 class="modal-title" id="modalLabel"><strong>Notes</strong></h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+            </button>
+         </div>
+         <div class="modal-body">
+            <div id="notes-display"></div>
+            <hr>
+            <form id="new-note" data-id="">
+               <input type="text" name="note-body" class="form-item" id="note-body" placeholder="New note">
+               <button id="submit-new-note" type="submit" data-id="" class="article-button form-item">Submit</button>
+            </form>
+         </div>
+      </div>
+   </div>
+</div>
+<script>
+    $(".unsave-article").on("click", function () {
+      var id = $(this).attr("data-id");
+      $.ajax({
+         method: "PUT",
+         url: "/unsaveArticle/" + id
+      }).then(function (res) {
+         location.reload();
+      })
+   })
+   $(".create-note").on("click", function () {
+      var id = $(this).attr("data-id");
+      $("#new-note").attr("data-id", id);
+      $.get("/article/" + id + "/notes").then(function (res) {
+         // console.log(res);
+         if (res.notes.length >= 1) {
+            $("#notes-display").empty();
+            var counter = 1;
+            res.notes.forEach(function (note) {
+               // console.log(note.body);
+               $("#notes-display").append(
+                  $("<p>").text(counter + ". " + note.body)
+               );
+               counter++;
+            });
+         } else {
+            $("#notes-display").empty();
+            $("#notes-display").text("There are no notes saved for this article.");
+         }
+      });
+   })
+   $("#new-note").on("submit", function (event) {
+      event.preventDefault();
+      var id = $("#new-note").attr("data-id");
+      var noteData = {
+         body: $("#note-body").val().trim()
+      }
+      $.ajax({
+         method: "POST",
+         url: "/newNote/" + id,
+         data: noteData
+      }).then(function (res) {
+         location.reload();
+      })
+   })
+   $("#clear-articles").on("click", function () {
+      $.get("/deleteArticles").then(function (res) {
+         $("#articles-display").empty();
+      })
+   }) 
+</script>
